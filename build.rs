@@ -1,0 +1,6 @@
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tonic_build::compile_protos("proto/monte_carlo_var.proto")?;
+    tonic_build::compile_protos("proto/options_pricing.proto")?;
+
+    Ok(())
+}

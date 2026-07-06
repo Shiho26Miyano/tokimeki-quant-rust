@@ -1,0 +1,62 @@
+syntax = "proto3";
+package options_pricing;
+
+enum OptionType {
+  CALL = 0;
+  PUT  = 1;
+}
+
+enum ExerciseStyle {
+  EUROPEAN = 0;
+  AMERICAN = 1;
+}
+
+enum ModelType {
+  BLACK_SCHOLES = 0;
+  HESTON        = 1;
+}
+
+message OptionContract {
+  double         spot           = 1;
+  double         strike         = 2;
+  double         time_to_expiry = 3;
+  double         volatility     = 4;
+  double         risk_free_rate = 5;
+  double         dividend_yield = 6;
+  OptionType     option_type    = 7;
+  ExerciseStyle  exercise_style = 8;
+  int32          binomial_steps = 9;
+  ModelType      model_type     = 10;
+  double heston_kappa = 11;
+  double heston_theta = 12;
+  double heston_xi    = 13;
+  double heston_rho   = 14;
+  double heston_v0    = 15;
+}
+
+message OptionsPricingRequest {
+  repeated OptionContract contracts  = 1;
+  int32                   stream_every = 2;
+}
+
+message OptionResult {
+  int32  contract_index = 1;
+  double price          = 2;
+  double delta          = 3;
+  double gamma          = 4;
+  double vega           = 5;
+  double theta          = 6;
+  double rho            = 7;
+}
+
+message OptionsPricingResult {
+  repeated OptionResult results      = 1;
+  bool                  is_final     = 2;
+  double                elapsed_ms   = 3;
+  int32                 contracts_done = 4;
+  string                implementation = 5;
+}
+
+service OptionsPricingService {
+  rpc PriceOptions (OptionsPricingRequest) returns (stream OptionsPricingResult);
+}

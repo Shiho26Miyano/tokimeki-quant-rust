@@ -1,0 +1,24 @@
+[package]
+name = "tokimeki-quant-rust"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "tokimeki-quant-server"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tonic = "0.12"
+prost = "0.13"
+rand = "0.8"
+rand_distr = "0.4"
+rayon = "1.7"
+parking_lot = "0.12"
+
+[dev-dependencies]
+tonic-build = "0.12"
+
+[build-dependencies]
+tonic-build = "0.12"
+prost-build = "0.12"

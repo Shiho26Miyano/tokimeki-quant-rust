@@ -1,0 +1,33 @@
+syntax = "proto3";
+package monte_carlo_var;
+
+message VarRequest {
+  int32  n_paths      = 1;
+  int32  n_days       = 2;
+  int32  n_stocks     = 3;
+  repeated double weights      = 4;
+  repeated double vols         = 5;
+  double mu           = 6;
+  int64  seed         = 7;
+  int32  stream_every = 8;
+}
+
+message VarResult {
+  int32  paths_done    = 1;
+  double var_95        = 2;
+  double var_99        = 3;
+  double cvar_95       = 4;
+  double cvar_99       = 5;
+  bool   is_final      = 6;
+  double elapsed_ms    = 7;
+  double paths_per_sec = 8;
+  string language      = 9;
+  double peak_mem_mb   = 10;
+  repeated double pnl_histogram = 11;
+  int32  histogram_bins = 12;
+  string implementation = 13;
+}
+
+service MonteCarloVarService {
+  rpc RunVar (VarRequest) returns (stream VarResult);
+}
