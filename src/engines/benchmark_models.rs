@@ -200,7 +200,7 @@ pub fn rolling_sharpe(data: &[Vec<f64>], window: usize) -> (usize, f64, f64) {
     let start = Instant::now();
     let returns: Vec<f64> = data.iter().map(|row| row[0]).collect();
     let n_out = returns.len().saturating_sub(window).saturating_add(1);
-    let mut bytes = n_out * std::mem::size_of::<f64>();
+    let bytes = n_out * std::mem::size_of::<f64>();
 
     for i in 0..n_out {
         let window_slice = &returns[i..i + window];

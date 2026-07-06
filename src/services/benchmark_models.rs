@@ -9,6 +9,7 @@ use crate::engines::benchmark_models::{
 };
 use tonic::{Request, Response, Status};
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 
 #[derive(Default)]
 pub struct BenchmarkModelsServiceImpl;
@@ -17,13 +18,13 @@ pub struct BenchmarkModelsServiceImpl;
 impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsService
     for BenchmarkModelsServiceImpl
 {
-    type RunRollingCorrelationStream = mpsc::Receiver<Result<RollingCorrelationResult, Status>>;
-    type RunRollingCovarianceStream = mpsc::Receiver<Result<RollingCovarianceResult, Status>>;
-    type RunRollingRegressionStream = mpsc::Receiver<Result<RollingRegressionResult, Status>>;
-    type RunRollingSharpStream = mpsc::Receiver<Result<RollingSharpResult, Status>>;
+    type RunRollingCorrelationStream = ReceiverStream<Result<RollingCorrelationResult, Status>>;
+    type RunRollingCovarianceStream = ReceiverStream<Result<RollingCovarianceResult, Status>>;
+    type RunRollingRegressionStream = ReceiverStream<Result<RollingRegressionResult, Status>>;
+    type RunRollingSharpStream = ReceiverStream<Result<RollingSharpResult, Status>>;
     type RunTimeSeriesDecompositionStream =
-        mpsc::Receiver<Result<TimeSeriesDecompositionResult, Status>>;
-    type RunPCADecompositionStream = mpsc::Receiver<Result<PcaDecompositionResult, Status>>;
+        ReceiverStream<Result<TimeSeriesDecompositionResult, Status>>;
+    type RunPCADecompositionStream = ReceiverStream<Result<PcaDecompositionResult, Status>>;
 
     async fn run_rolling_correlation(
         &self,
@@ -40,7 +41,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 is_final: true,
             })).await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn run_rolling_covariance(
@@ -58,7 +59,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 is_final: true,
             })).await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn run_rolling_regression(
@@ -76,7 +77,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 is_final: true,
             })).await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn run_rolling_sharp(
@@ -94,7 +95,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 is_final: true,
             })).await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn run_time_series_decomposition(
@@ -112,7 +113,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 is_final: true,
             })).await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn run_pca_decomposition(
@@ -138,7 +139,7 @@ impl crate::benchmark_models::benchmark_models_service_server::BenchmarkModelsSe
                 }))
                 .await;
         });
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 }
 

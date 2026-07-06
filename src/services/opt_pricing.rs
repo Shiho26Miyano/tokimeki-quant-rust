@@ -2,6 +2,7 @@ use crate::options_pricing::{OptionsPricingRequest, OptionsPricingResult, Option
 use crate::engines::black_scholes::BlackScholesEngine;
 use tonic::{Request, Response, Status};
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use std::time::Instant;
 
 #[derive(Default)]
@@ -11,7 +12,7 @@ pub struct OptionsPricingServiceImpl;
 impl crate::options_pricing::options_pricing_service_server::OptionsPricingService
     for OptionsPricingServiceImpl
 {
-    type PriceOptionsStream = mpsc::Receiver<Result<OptionsPricingResult, Status>>;
+    type PriceOptionsStream = ReceiverStream<Result<OptionsPricingResult, Status>>;
 
     async fn price_options(
         &self,
@@ -22,18 +23,19 @@ impl crate::options_pricing::options_pricing_service_server::OptionsPricingServi
 
         tokio::spawn(async move {
             if let Err(e) = process_options(&req, &mut tx).await {
-                let _ = tx.send(Err(Status::internal(e.to_string()))).await;
+                let msg = e.to_string();
+                let _ = tx.send(Err(Status::internal(msg))).await;
             }
         });
 
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 }
 
 async fn process_options(
     req: &OptionsPricingRequest,
     tx: &mut mpsc::Sender<Result<OptionsPricingResult, Status>>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let start = Instant::now();
     let contracts = &req.contracts;
     let stream_every = if req.stream_every > 0 { req.stream_every as usize } else { 50 };
