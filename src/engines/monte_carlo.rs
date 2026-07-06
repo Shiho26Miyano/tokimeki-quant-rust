@@ -41,7 +41,7 @@ impl MonteCarloEngine {
     }
 
     pub fn run_batch(&mut self, batch_size: usize) {
-        let batch_size = batch_size.min(self.n_paths - self.paths_completed());
+        let batch_size = batch_size.min(self.n_paths - self.paths_done());
 
         let n_paths = self.n_paths;
         let n_days = self.n_days;

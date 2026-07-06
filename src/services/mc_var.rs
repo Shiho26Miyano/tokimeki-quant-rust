@@ -2,6 +2,7 @@ use crate::monte_carlo_var::{VarRequest, VarResult};
 use crate::engines::monte_carlo::MonteCarloEngine;
 use tonic::{Request, Response, Status};
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use std::time::Instant;
 
 #[derive(Default)]
@@ -11,7 +12,7 @@ pub struct MonteCarloVarServiceImpl;
 impl crate::monte_carlo_var::monte_carlo_var_service_server::MonteCarloVarService
     for MonteCarloVarServiceImpl
 {
-    type RunVarStream = mpsc::Receiver<Result<VarResult, Status>>;
+    type RunVarStream = ReceiverStream<Result<VarResult, Status>>;
 
     async fn run_var(
         &self,
@@ -22,18 +23,19 @@ impl crate::monte_carlo_var::monte_carlo_var_service_server::MonteCarloVarServic
 
         tokio::spawn(async move {
             if let Err(e) = process_var(&req, &mut tx).await {
-                let _ = tx.send(Err(Status::internal(e.to_string()))).await;
+                let msg = e.to_string();
+                let _ = tx.send(Err(Status::internal(msg))).await;
             }
         });
 
-        Ok(Response::new(rx))
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 }
 
 async fn process_var(
     req: &VarRequest,
     tx: &mut mpsc::Sender<Result<VarResult, Status>>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let start = Instant::now();
 
     let n_paths = if req.n_paths > 0 { req.n_paths as usize } else { 200_000 };
