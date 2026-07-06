@@ -8,7 +8,7 @@ High-performance gRPC quantitative engine in Rust:
 
 ## Build & Run
 
-**Requirements**: Rust 1.75+, `protoc` (for local builds; Docker image includes it)
+**Requirements**: Rust 1.85+ (Docker image uses `rust:1.85-bookworm`)
 
 ```bash
 cargo build --release
