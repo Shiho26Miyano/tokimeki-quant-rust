@@ -1,0 +1,61 @@
+syntax = "proto3";
+package benchmark_models;
+
+message BenchmarkDataRequest {
+  int32  n_rows     = 1;
+  int32  n_assets   = 2;
+  int32  window     = 3;
+  int64  seed       = 4;
+  string model_name = 5;
+}
+
+message RollingCorrelationResult {
+  int32  output_rows  = 1;
+  double elapsed_ms   = 2;
+  double peak_mem_mb  = 3;
+  bool   is_final     = 4;
+}
+
+message RollingCovarianceResult {
+  int32  output_rows  = 1;
+  double elapsed_ms   = 2;
+  double peak_mem_mb  = 3;
+  bool   is_final     = 4;
+}
+
+message RollingRegressionResult {
+  int32  output_rows  = 1;
+  double elapsed_ms   = 2;
+  double peak_mem_mb  = 3;
+  bool   is_final     = 4;
+}
+
+message RollingSharpResult {
+  int32  output_length = 1;
+  double elapsed_ms    = 2;
+  double peak_mem_mb   = 3;
+  bool   is_final      = 4;
+}
+
+message TimeSeriesDecompositionResult {
+  int32  output_length = 1;
+  double elapsed_ms    = 2;
+  double peak_mem_mb   = 3;
+  bool   is_final      = 4;
+}
+
+message PcaDecompositionResult {
+  int32  output_rows  = 1;
+  double elapsed_ms   = 2;
+  double peak_mem_mb  = 3;
+  bool   is_final     = 4;
+}
+
+service BenchmarkModelsService {
+  rpc RunRollingCorrelation      (BenchmarkDataRequest) returns (stream RollingCorrelationResult);
+  rpc RunRollingCovariance       (BenchmarkDataRequest) returns (stream RollingCovarianceResult);
+  rpc RunRollingRegression       (BenchmarkDataRequest) returns (stream RollingRegressionResult);
+  rpc RunRollingSharp            (BenchmarkDataRequest) returns (stream RollingSharpResult);
+  rpc RunTimeSeriesDecomposition (BenchmarkDataRequest) returns (stream TimeSeriesDecompositionResult);
+  rpc RunPCADecomposition        (BenchmarkDataRequest) returns (stream PcaDecompositionResult);
+}

@@ -1,83 +1,55 @@
 # Tokimeki Quant Engine - Rust Implementation
 
-High-performance gRPC-based quantitative engine in Rust with two core services:
+High-performance gRPC quantitative engine in Rust:
 
-- **MonteCarloVarService**: Parallel GBM portfolio VaR/CVaR computation via rayon
-- **OptionsPricingService**: Black-Scholes European option pricing with Greeks
+- **MonteCarloVarService** — parallel GBM portfolio VaR/CVaR (rayon)
+- **OptionsPricingService** — Black-Scholes European options + Greeks
+- **BenchmarkModelsService** — rolling correlation/covariance/regression, Sharpe, decomposition, PCA
 
 ## Build & Run
 
-**Requirements**: Rust 1.75+
+**Requirements**: Rust 1.75+, `protoc` (for local builds; Docker image includes it)
 
 ```bash
-# Build
 cargo build --release
-
-# Run (default port 50052)
 cargo run --release
+```
 
-# Custom port
+**Port** — Railway injects `PORT` (often `8080`). The server binds `PORT`, then `GRPC_PORT`, then `50052`:
+
+```bash
+PORT=8080 cargo run --release
 GRPC_PORT=50053 cargo run --release
 ```
 
-## Docker
+## Docker / Railway
 
 ```bash
 docker build -t tokimeki-quant-rust .
-docker run -p 50052:50052 -e GRPC_PORT=50052 tokimeki-quant-rust
+docker run -p 8080:8080 -e PORT=8080 tokimeki-quant-rust
 ```
 
-## Services
+`railway.toml` is included. Create a new Railway service from this repo; Railway builds via `Dockerfile`.
 
-### MonteCarloVarService
+### Tokimeki env (same Railway project)
 
-```
-rpc RunVar(VarRequest) returns (stream VarResult)
-```
-
-**Inputs**: n_paths, n_days, n_stocks, weights[], vols[], mu, seed, stream_every
-
-**Output**: Streams VarResult with paths_done, var_95, var_99, cvar_95, cvar_99, elapsed_ms
-
-Uses parallel rayon for near-linear speedup on multi-core.
-
-### OptionsPricingService
-
-```
-rpc PriceOptions(OptionsPricingRequest) returns (stream OptionsPricingResult)
+```bash
+GRPC_RUST_HOST=${{tokimeki-quant-rust.RAILWAY_PRIVATE_DOMAIN}}
+GRPC_RUST_PORT=${{tokimeki-quant-rust.PORT}}
 ```
 
-**Input**: List of OptionContract (spot, strike, time_to_expiry, volatility, risk_free_rate, etc.)
-
-**Output**: Streams pricing results with all Greeks (delta, gamma, vega, theta, rho)
-
-## Python Client
-
-The `RustQuantEngineClient` in Tokimeki connects to this service:
-
-```python
-from app.services.rust_quant_engine_client import RustQuantEngineClient
-
-client = RustQuantEngineClient(host="localhost", port=50052)
-await client.connect()
-
-async for result in client.run_var(n_paths=10000, n_days=252):
-    print(f"VaR95: {result.var_95}")
-```
+Cross-project deploys need a TCP proxy; use the public proxy host:port instead of private domain.
 
 ## gRPC Testing
 
 ```bash
-# List services
 grpcurl -plaintext localhost:50052 list
 
-# Test VaR
 grpcurl -plaintext \
   -d '{"n_paths":1000,"n_days":252,"n_stocks":5,"mu":0.08,"seed":42}' \
   localhost:50052 monte_carlo_var.MonteCarloVarService/RunVar
 
-# Test options pricing
 grpcurl -plaintext \
-  -d '{"contracts":[{"spot":100,"strike":100,"time_to_expiry":1.0,"volatility":0.2,"risk_free_rate":0.05}]}' \
-  localhost:50052 options_pricing.OptionsPricingService/PriceOptions
+  -d '{"n_rows":1000,"n_assets":10,"window":252,"seed":42}' \
+  localhost:50052 benchmark_models.BenchmarkModelsService/RunRollingCorrelation
 ```

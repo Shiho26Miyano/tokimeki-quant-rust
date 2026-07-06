@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# gRPC server — no HTTP health endpoint; rely on Docker HEALTHCHECK (TCP on PORT).
+restartPolicyType = "on_failure"
