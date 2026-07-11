@@ -12,3 +12,7 @@ pub mod options_pricing {
 pub mod benchmark_models {
     tonic::include_proto!("benchmark_models");
 }
+
+pub mod order_book_arena {
+    tonic::include_proto!("order_book_arena");
+}

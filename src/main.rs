@@ -1,5 +1,5 @@
 use tokimeki_quant_rust::{
-    benchmark_models, monte_carlo_var, options_pricing, services,
+    benchmark_models, monte_carlo_var, options_pricing, order_book_arena, services,
 };
 use tonic::transport::Server;
 use std::env;
@@ -18,11 +18,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = format!("0.0.0.0:{}", port).parse()?;
 
     println!("QuantEngine Rust gRPC server starting on port {}", port);
-    println!("Services: MonteCarloVar | OptionsPricing | BenchmarkModels");
+    println!("Services: MonteCarloVar | OptionsPricing | BenchmarkModels | OrderBookArena");
 
     let monte_carlo_var_svc = services::mc_var::MonteCarloVarServiceImpl::default();
     let options_pricing_svc = services::opt_pricing::OptionsPricingServiceImpl::default();
     let benchmark_models_svc = services::benchmark_models::BenchmarkModelsServiceImpl::default();
+    let order_book_arena_svc = services::order_book_arena::OrderBookArenaServiceImpl::default();
 
     Server::builder()
         .add_service(
@@ -38,6 +39,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(
             benchmark_models::benchmark_models_service_server::BenchmarkModelsServiceServer::new(
                 benchmark_models_svc,
+            ),
+        )
+        .add_service(
+            order_book_arena::order_book_arena_service_server::OrderBookArenaServiceServer::new(
+                order_book_arena_svc,
             ),
         )
         .serve(addr)
