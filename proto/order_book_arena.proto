@@ -1,0 +1,55 @@
+syntax = "proto3";
+package order_book_arena;
+option java_package = "com.tokimeki.orderbookarena.proto";
+option java_multiple_files = true;
+
+message OrderBookArenaRequest {
+  bytes  order_flow      = 1;
+  int32  order_count     = 2;
+  int32  n_levels        = 3;
+  int32  book_capacity   = 4;
+  int32  snapshot_every  = 5;
+  int32  batch_size      = 6;
+  int32  depth_levels    = 7;
+}
+
+message DepthLevel { uint32 price_idx = 1; uint64 qty = 2; }
+
+message DepthSnapshot {
+  uint64 seq = 1;
+  repeated DepthLevel bids = 2;
+  repeated DepthLevel asks = 3;
+}
+
+message Trade {
+  uint64 seq = 1; uint64 maker_id = 2; uint64 taker_id = 3;
+  uint32 price_idx = 4; uint32 qty = 5;
+}
+
+message LatencySummary {
+  double p50_ns = 1; double p99_ns = 2; double p999_ns = 3; double max_ns = 4;
+  double mean_ns = 5; uint64 sample_count = 6;
+  double total_elapsed_ms = 7; double orders_per_sec = 8;
+}
+
+message OrderBookArenaEvent {
+  string language = 1;
+  string implementation = 2;
+  uint64 batch_start_seq = 3;
+  uint64 batch_end_seq = 4;
+  repeated uint32 latency_ns = 5;
+  repeated Trade trades = 6;
+  DepthSnapshot snapshot = 7;
+  bool is_final = 8;
+  LatencySummary summary = 9;
+  uint64 final_order_count = 10;
+  uint32 final_best_bid = 11;
+  uint32 final_best_ask = 12;
+  uint64 final_trade_count = 13;
+  uint64 final_trade_volume = 14;
+  string error = 15;
+}
+
+service OrderBookArenaService {
+  rpc RunOrderBookArena (OrderBookArenaRequest) returns (stream OrderBookArenaEvent);
+}
