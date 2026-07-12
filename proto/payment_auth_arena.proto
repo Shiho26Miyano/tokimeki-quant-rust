@@ -1,0 +1,54 @@
+syntax = "proto3";
+package payment_auth_arena;
+option java_package = "com.tokimeki.paymentauthorena.proto";
+option java_multiple_files = true;
+
+// Fixed-point transaction flow, 32 bytes/record, identical layout across
+// Rust/Java/Python so all languages score the exact same synthetic stream.
+message PaymentAuthArenaRequest {
+  bytes  transaction_flow    = 1;
+  int32  transaction_count   = 2;
+  int32  batch_size          = 3;
+  uint32 velocity_limit      = 4; // txns/hour before VELOCITY rule fires
+  uint32 geo_delta_limit_km  = 5; // implausible-travel distance threshold
+  uint32 amount_limit_cents  = 6; // high-value threshold
+}
+
+enum Decision {
+  APPROVE = 0;
+  REVIEW  = 1;
+  DECLINE = 2;
+}
+
+message FraudDecision {
+  uint64   seq         = 1;
+  uint32   risk_score   = 2; // 0-1000
+  Decision decision     = 3;
+  uint32   reason_mask  = 4; // bit0=VELOCITY bit1=GEO_JUMP bit2=HIGH_AMOUNT bit3=RISKY_MCC bit4=CNP_HIGH_VALUE
+}
+
+message LatencySummary {
+  double p50_ns = 1; double p99_ns = 2; double p999_ns = 3; double max_ns = 4;
+  double mean_ns = 5; uint64 sample_count = 6;
+  double total_elapsed_ms = 7; double txns_per_sec = 8;
+}
+
+message PaymentAuthArenaEvent {
+  string language = 1;
+  string implementation = 2;
+  uint64 batch_start_seq = 3;
+  uint64 batch_end_seq = 4;
+  repeated uint32 latency_ns = 5;
+  repeated FraudDecision decisions = 6;
+  bool is_final = 7;
+  LatencySummary summary = 8;
+  uint64 final_transaction_count = 9;
+  uint64 final_approve_count = 10;
+  uint64 final_review_count = 11;
+  uint64 final_decline_count = 12;
+  string error = 13;
+}
+
+service PaymentAuthArenaService {
+  rpc RunPaymentAuthArena (PaymentAuthArenaRequest) returns (stream PaymentAuthArenaEvent);
+}
