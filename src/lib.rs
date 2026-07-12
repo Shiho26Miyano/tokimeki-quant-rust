@@ -16,3 +16,7 @@ pub mod benchmark_models {
 pub mod order_book_arena {
     tonic::include_proto!("order_book_arena");
 }
+
+pub mod payment_auth_arena {
+    tonic::include_proto!("payment_auth_arena");
+}
