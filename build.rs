@@ -4,6 +4,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::compile_protos("proto/benchmark_models.proto")?;
     tonic_build::compile_protos("proto/order_book_arena.proto")?;
     tonic_build::compile_protos("proto/payment_auth_arena.proto")?;
+    tonic_build::compile_protos("proto/event_pulse.proto")?;
 
     Ok(())
 }

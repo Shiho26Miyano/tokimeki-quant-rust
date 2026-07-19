@@ -5,6 +5,9 @@ High-performance gRPC quantitative engine in Rust:
 - **MonteCarloVarService** — parallel GBM portfolio VaR/CVaR (rayon)
 - **OptionsPricingService** — Black-Scholes European options + Greeks
 - **BenchmarkModelsService** — rolling correlation/covariance/regression, Sharpe, decomposition, PCA
+- **OrderBookArenaService** — arena-based limit order book matching engine
+- **PaymentAuthArenaService** — deterministic fraud-scoring rule engine
+- **EventPulseService** — live firehose ingestion (Wikipedia EventStreams, Bluesky Jetstream) with streaming trending-topic aggregation. This is the only service that makes outbound network calls — it needs egress to `stream.wikimedia.org` and `jetstream2.us-east.bsky.network` to do anything useful.
 
 ## Build & Run
 
@@ -52,4 +55,8 @@ grpcurl -plaintext \
 grpcurl -plaintext \
   -d '{"n_rows":1000,"n_assets":10,"window":252,"seed":42}' \
   localhost:50052 benchmark_models.BenchmarkModelsService/RunRollingCorrelation
+
+grpcurl -plaintext \
+  -d '{"sources":["wikipedia","bluesky"],"batch_ms":250,"trending_top_n":5}' \
+  localhost:50052 event_pulse.EventPulseService/RunEventPulse
 ```

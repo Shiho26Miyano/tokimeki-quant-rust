@@ -1,5 +1,6 @@
 pub mod engines;
 pub mod services;
+pub mod sources;
 
 pub mod monte_carlo_var {
     tonic::include_proto!("monte_carlo_var");
@@ -19,4 +20,8 @@ pub mod order_book_arena {
 
 pub mod payment_auth_arena {
     tonic::include_proto!("payment_auth_arena");
+}
+
+pub mod event_pulse {
+    tonic::include_proto!("event_pulse");
 }
