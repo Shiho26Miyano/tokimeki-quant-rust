@@ -18,7 +18,11 @@ pub async fn run(tx: Sender<RawEvent>) {
 }
 
 async fn connect_and_stream(tx: &Sender<RawEvent>) -> Result<(), String> {
-    let client = reqwest::Client::builder().build().map_err(|e| e.to_string())?;
+    // Wikimedia EventStreams requires a descriptive User-Agent; bare clients get 403.
+    let client = reqwest::Client::builder()
+        .user_agent("Tokimeki-EventPulse/1.0 (https://github.com/Shiho26Miyano/tokimeki-quant-rust; educational demo)")
+        .build()
+        .map_err(|e| e.to_string())?;
     let resp = client
         .get(STREAM_URL)
         .header("Accept", "text/event-stream")
