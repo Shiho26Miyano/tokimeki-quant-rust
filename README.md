@@ -7,7 +7,7 @@ High-performance gRPC quantitative engine in Rust:
 - **BenchmarkModelsService** — rolling correlation/covariance/regression, Sharpe, decomposition, PCA
 - **OrderBookArenaService** — arena-based limit order book matching engine
 - **PaymentAuthArenaService** — deterministic fraud-scoring rule engine
-- **EventPulseService** — live firehose ingestion (Wikipedia EventStreams, Bluesky Jetstream) with streaming trending-topic aggregation. This is the only service that makes outbound network calls — it needs egress to `stream.wikimedia.org` and `jetstream2.us-east.bsky.network` to do anything useful.
+- **EventPulseService** — live firehose ingestion (Wikipedia EventStreams, Bluesky Jetstream, Stack Overflow's recent-questions feed) with streaming trending-topic aggregation. This is the only service that makes outbound network calls — it needs egress to `stream.wikimedia.org`, `jetstream2.us-east.bsky.network`, and `stackoverflow.com` to do anything useful. Stack Overflow has no push transport, so that source polls the feed every 30s instead of holding a persistent connection.
 
 ## Build & Run
 

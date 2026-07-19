@@ -4,7 +4,7 @@ option java_package = "com.tokimeki.eventpulse.proto";
 option java_multiple_files = true;
 
 message EventPulseRequest {
-  repeated string sources = 1;  // "bluesky" | "wikipedia"; empty = both
+  repeated string sources = 1;  // "bluesky" | "wikipedia" | "stackoverflow"; empty = bluesky + wikipedia
   int32  batch_ms         = 2;  // batching window in ms, default 250
   int32  trending_top_n   = 3;  // default 5
   int32  max_events       = 4;  // 0 = unbounded, run until client disconnects
@@ -16,8 +16,8 @@ message TrendingTopic {
 }
 
 message PulseEvent {
-  string source = 1;  // "bluesky" | "wikipedia"
-  string kind   = 2;  // "post" | "edit"
+  string source = 1;  // "bluesky" | "wikipedia" | "stackoverflow"
+  string kind   = 2;  // "post" | "edit" | "question"
   string summary = 3;
   int64  ts_ms  = 4;
 }
