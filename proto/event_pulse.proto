@@ -1,0 +1,37 @@
+syntax = "proto3";
+package event_pulse;
+option java_package = "com.tokimeki.eventpulse.proto";
+option java_multiple_files = true;
+
+message EventPulseRequest {
+  repeated string sources = 1;  // "bluesky" | "wikipedia"; empty = both
+  int32  batch_ms         = 2;  // batching window in ms, default 250
+  int32  trending_top_n   = 3;  // default 5
+  int32  max_events       = 4;  // 0 = unbounded, run until client disconnects
+}
+
+message TrendingTopic {
+  string topic = 1;
+  uint64 count = 2;
+}
+
+message PulseEvent {
+  string source = 1;  // "bluesky" | "wikipedia"
+  string kind   = 2;  // "post" | "edit"
+  string summary = 3;
+  int64  ts_ms  = 4;
+}
+
+message PulseBatch {
+  uint64 batch_seq = 1;
+  repeated PulseEvent events = 2;
+  repeated TrendingTopic trending = 3;
+  double current_rate_per_sec = 4;
+  uint64 total_ingested = 5;
+  bool   is_final = 6;
+  string error = 7;
+}
+
+service EventPulseService {
+  rpc RunEventPulse (EventPulseRequest) returns (stream PulseBatch);
+}
