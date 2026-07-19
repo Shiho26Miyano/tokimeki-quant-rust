@@ -1,14 +1,14 @@
-FROM rust:1.85-bookworm AS builder
+FROM rust:1.86-bookworm AS builder
 
 RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
-COPY Cargo.toml Cargo.lock* ./
+COPY Cargo.toml Cargo.lock ./
 COPY proto ./proto
 COPY src ./src
 COPY build.rs .
 
-RUN cargo build --release
+RUN cargo build --release --locked
 
 FROM debian:bookworm-slim
 

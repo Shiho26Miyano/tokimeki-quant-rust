@@ -1,5 +1,5 @@
+# Cargo.lock is tracked for reproducible Docker/Railway builds of the binary.
 /target
-Cargo.lock
 .DS_Store
 *.swp
 *.swo

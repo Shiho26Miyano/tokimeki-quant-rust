@@ -103,6 +103,7 @@ async fn run_pulse(req: &EventPulseRequest, tx: &mpsc::Sender<Result<PulseBatch,
     let mut batch_events: Vec<PulseEvent> = Vec::new();
     let mut batch_seq: u64 = 0;
     let mut ticker = tokio::time::interval(Duration::from_millis(batch_ms));
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let start = Instant::now();
 
     loop {
@@ -121,6 +122,28 @@ async fn run_pulse(req: &EventPulseRequest, tx: &mpsc::Sender<Result<PulseBatch,
                 });
                 if aggregator.total_ingested() >= max_events {
                     break;
+                }
+                // Eager flush so the UI lights up without waiting for the next timer tick.
+                if batch_events.len() >= 8 {
+                    batch_seq += 1;
+                    let trending = aggregator
+                        .trending(top_n)
+                        .into_iter()
+                        .map(|(topic, count)| TrendingTopic { topic, count })
+                        .collect();
+                    let elapsed_s = start.elapsed().as_secs_f64().max(0.001);
+                    let batch = PulseBatch {
+                        batch_seq,
+                        events: std::mem::take(&mut batch_events),
+                        trending,
+                        current_rate_per_sec: aggregator.total_ingested() as f64 / elapsed_s,
+                        total_ingested: aggregator.total_ingested(),
+                        is_final: false,
+                        error: String::new(),
+                    };
+                    if tx.send(Ok(batch)).await.is_err() {
+                        return;
+                    }
                 }
             }
             _ = ticker.tick() => {
