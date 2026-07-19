@@ -21,6 +21,7 @@ serde_json = "1.0.150"
 futures-util = "0.3.33"
 tokio-tungstenite = { version = "0.30.0", features = ["rustls-tls-webpki-roots"] }
 reqwest = { version = "0.13.4", default-features = false, features = ["json", "stream", "rustls"] }
+quick-xml = "0.36"
 
 [dev-dependencies]
 tonic-build = "0.12"

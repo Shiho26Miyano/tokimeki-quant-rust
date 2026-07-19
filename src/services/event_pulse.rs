@@ -59,10 +59,12 @@ async fn run_pulse(req: &EventPulseRequest, tx: &mpsc::Sender<Result<PulseBatch,
         req.sources.clone()
     };
     for s in &wanted {
-        if s != "bluesky" && s != "wikipedia" {
+        if s != "bluesky" && s != "wikipedia" && s != "stackoverflow" {
             send_error(
                 tx,
-                format!("unknown source \"{s}\" \u{2014} expected \"bluesky\" or \"wikipedia\""),
+                format!(
+                    "unknown source \"{s}\" \u{2014} expected \"bluesky\", \"wikipedia\", or \"stackoverflow\""
+                ),
             )
             .await;
             return;
@@ -94,6 +96,12 @@ async fn run_pulse(req: &EventPulseRequest, tx: &mpsc::Sender<Result<PulseBatch,
         let t = raw_tx.clone();
         handles.push(tokio::spawn(async move {
             sources::bluesky::run(t).await;
+        }));
+    }
+    if wanted.iter().any(|s| s == "stackoverflow") {
+        let t = raw_tx.clone();
+        handles.push(tokio::spawn(async move {
+            sources::stackoverflow::run(t).await;
         }));
     }
     let _guard = AbortOnDrop(handles);
